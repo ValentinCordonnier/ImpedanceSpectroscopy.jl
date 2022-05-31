@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.4
+# v0.19.5
 
 using Markdown
 using InteractiveUtils
@@ -34,16 +34,6 @@ md""" Adds elements in parallel
 	
      """
 
-# ╔═╡ 59f5dbe6-17bd-4b63-b0c1-a7d21ebb3ad6
-function p(parallel)
-	
-    z = 0
-    for elem in parallel
-        z += 1/elem[1]
-	end
-    return 1/z
-end
-
 # ╔═╡ 46a541c7-a8fe-4a7c-aec7-ea98d2b121a3
 abstract type AbstractElem end
 
@@ -55,11 +45,20 @@ md""" Defines an inductor
      """
 
 # ╔═╡ e4a1d3d0-d1fb-11ec-3cf4-bf045b178625
-function L(p, f)
+# ╠═╡ disabled = true
+#=╠═╡
+function Ll(p, f)
     omega = 2*pi*f
     L = p[1]
     Z = L*1j*omega
     return [Z,f]
+end
+  ╠═╡ =#
+
+# ╔═╡ 47bade36-8484-431d-90ae-27ad226f68bc
+mutable struct L <: AbstractElem
+	p::Float64
+	f::Float64
 end
 
 # ╔═╡ 149d27b1-21a6-44a3-8bab-07bc382667f7
@@ -70,11 +69,20 @@ md""" Defines a resistor
     """
 
 # ╔═╡ 2eff04be-e558-487a-9665-b0ea0c03ba37
-function R(p, f)
+# ╠═╡ disabled = true
+#=╠═╡
+function Rr(p, f)
     
     R = p[1]
     Z = (length(f)*[R])[1]
     return [Z,f]
+end
+  ╠═╡ =#
+
+# ╔═╡ ce9791fc-2635-4e8e-b25d-2e88dd454e67
+mutable struct R <: AbstractElem
+	p::Float64
+	f::Float64
 end
 
 # ╔═╡ 01a1baa2-6410-49df-a145-63caadf01b21
@@ -85,12 +93,43 @@ md""" Defines a capacitor
      """
 
 # ╔═╡ 2ea60165-4aa9-4cc0-ba30-b3cb77146063
-function C(p, f)
+# ╠═╡ disabled = true
+#=╠═╡
+function Cc(p, f)
 	
     omega = 2*pi*f
     C = p[1]
     Z = 1.0/(C*j*omega)
     return [Z,f]
+end
+  ╠═╡ =#
+
+# ╔═╡ 8062deb9-e5d6-4e46-bd87-51e1305971a8
+mutable struct C <: AbstractElem
+	p::Float64
+	f::Float64
+end
+
+# ╔═╡ ed8258d9-7266-4f1c-8a8b-2491d41e15cf
+begin
+	R1 = R(10,1000)
+	C2 = C(0.000006,1000)
+	L3 = L(0.00005,1000)
+	#CPE1 = CPE([0.00005,3],1000)
+end
+
+# ╔═╡ c896ee17-d3f4-4d39-b7ba-dbef7bf921d9
+begin
+	calcOmega(elem::L) = elem.f*2*pi
+	calcOmega(elem::R) = elem.f*2*pi
+	calcOmega(elem::C) = elem.f*2*pi
+end
+
+# ╔═╡ 13059770-a5b5-4647-8755-8216daca1155
+begin
+	calcImp(elem::L) = elem.p[1]*1j*calcOmega(elem)
+	calcImp(elem::R) = elem.p[1]*length(elem.f)
+	calcImp(elem::C) = 1/(elem.p[1]*1j*calcOmega(elem))
 end
 
 # ╔═╡ 79453f53-9f05-484e-a29a-f96b179a37b1
@@ -109,15 +148,24 @@ function CPE(p, f)
     return [Z,f]
 end
 
-# ╔═╡ f34387c3-119c-4783-b13d-ed114a58ae0d
+# ╔═╡ 59f5dbe6-17bd-4b63-b0c1-a7d21ebb3ad6
 begin
-	R1 = R(10,1000)
-	C2 = C(0.000006,1000)
-	L3 = L(0.00005,1000)
+	function p(parallel)
+		
+	    z = 0
+		if typeof(parallel[1]) == L || typeof(parallel[1]) == R || typeof(parallel[1]) == C || typeof(parallel[1]) == CPE
+			
+		    for elem in parallel
+		        z += 1/calcImp(elem)
+			end
+		else
+			for elem in parallel
+		        z += 1/elem
+			end
+		end
+	    return 1/z
+	end
 end
-
-# ╔═╡ f93bdd7d-88f6-494d-86df-306f11daf850
-p([R1,C2,R1])
 
 # ╔═╡ 3395eeb0-cfaf-4b82-9446-22e28ed7e87c
 abstract type AbstractCircuit end
@@ -127,19 +175,19 @@ struct BaseCircuit <: AbstractCircuit
 		
 		values::Vector{Any}
 		elements::Vector{String}
-	
+
 end
 
 # ╔═╡ 137c365e-f85a-410c-bece-97d6edee2147
 function getImp(circuit::BaseCircuit)
 	a = []
 	for i in circuit.values
-		if length(i[1]) == 1
-			append!(a,i[1])
+		if typeof(i) == L || typeof(i) == R || typeof(i) == C || typeof(i) == CPE
+			push!(a,calcImp(i))
 		else
 			b = []
 			for j in i
-				append!(b,j[1])
+				push!(b,calcImp(j))
 			end
 			push!(a,b)
 		end
@@ -151,12 +199,12 @@ end
 function getFreq(circuit::BaseCircuit)
 	a = []
 	for i in circuit.values
-		if length(i[2]) == 1
-			append!(a,i[2])
+		if typeof(i) == L || typeof(i) == R || typeof(i) == C || typeof(i) == CPE
+			push!(a,i.f)
 		else
 			b = []
 			for j in i
-				append!(b,j[2])
+				push!(b,j.f)
 			end
 			push!(a,b)
 		end
@@ -178,18 +226,6 @@ function calculateCircuitLength(circuit::BaseCircuit)
 	return lengthCircuit
 end
 
-# ╔═╡ aee08ae6-d303-41db-b23d-45f7f99049ec
-# ╠═╡ disabled = true
-#=╠═╡
-function ImpedanceCircuittest(circuit::BaseCircuit)
-	Zall = 0
-	for i in getValues(circuit)
-		Zall += i
-	end	
-	return Zall
-end
-  ╠═╡ =#
-
 # ╔═╡ 73d4cc32-e99a-42e8-8855-75ac032ca316
 function ImpedanceCircuit(circuit::BaseCircuit)
 	Zall = 0
@@ -208,8 +244,34 @@ function modZ(Z::Complex)
 	return sqrt(real(Z)^2+imag(Z)^2)
 end
 
+# ╔═╡ 79d9b166-8c4e-41a4-917d-32420c3a2234
+function RangeFreq(circuit::BaseCircuit, fStart::Int64, fEnd::Int64, nbEva::Int)
+	
+	x = range(start = fStart, step = (fEnd-fStart)/nbEva, stop = fEnd)
+	a = []
+
+	for k in x
+		for i in circuit.values
+			if typeof(i) == L || typeof(i) == R || typeof(i) == C || typeof(i) == CPE
+				i.f = k
+			else
+				for j in i
+					j.f = k
+				end
+			end
+		end
+		temp = ImpedanceCircuit(circuit)
+		push!(a,temp)
+	end
+	
+	return a
+end
+
 # ╔═╡ f05e9e5d-4f58-49cd-b5e5-6ee9e6429748
 circuit1 = BaseCircuit([R1,C2,L3],["R1-C2-L3"])
+
+# ╔═╡ 1d30e1a3-6acd-4fd5-9433-a06facaea3ba
+getImp(circuit1)
 
 # ╔═╡ a75bdb11-a94a-42c3-903d-98af1805036a
 calculateCircuitLength(circuit1)
@@ -220,8 +282,11 @@ getElem(circuit1)
 # ╔═╡ d24bf573-46b5-43b0-8b1d-75161485f0b1
 circuit2 = BaseCircuit([R1,C2,[R1,C2,R1],L3],["R1-C2-L3"])
 
-# ╔═╡ 35b7428d-5c9a-469c-8c78-fd8bed3c73ee
+# ╔═╡ 21fd02a5-d540-4b70-9089-634a17b11847
 getImp(circuit2)
+
+# ╔═╡ f0d1754a-ecb2-4742-9157-d84fb59647f4
+calculateCircuitLength(circuit2)
 
 # ╔═╡ 4fb868f4-90fa-4d69-b7b9-81ebb965e3e6
 getFreq(circuit2)
@@ -231,6 +296,12 @@ a = ImpedanceCircuit(circuit1)
 
 # ╔═╡ 86195783-b351-4c05-bdca-c9abd590e535
 b = ImpedanceCircuit(circuit2)
+
+# ╔═╡ f4c4f726-356a-4b38-b0e9-b28c14bf2acc
+data2 = RangeFreq(circuit2, 100, 100000, 500)
+
+# ╔═╡ 48444fc2-a323-4fc7-8b29-dd1ebcdd64bf
+length(data2)
 
 # ╔═╡ d3db3785-51fc-46a8-bf64-372223382170
 modZ(b)
@@ -244,10 +315,7 @@ function plotNyquist(data)
 end
 
 # ╔═╡ 221e9a81-817d-46c8-9d1f-ec835c7be898
-plotNyquist(data)
-
-# ╔═╡ f5e0d5a4-09e9-4514-b747-2232056147e8
-
+plotNyquist(data2)
 
 # ╔═╡ 1383c618-4440-40a8-b25f-2157ea4be46e
 function plotBode(data)
@@ -255,7 +323,7 @@ function plotBode(data)
 end
 
 # ╔═╡ c50fa089-569e-4ec5-a0ff-eb956a912ea6
-plotBode(data)
+plotBode(data2)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1173,37 +1241,44 @@ version = "0.9.1+5"
 # ╠═46a541c7-a8fe-4a7c-aec7-ea98d2b121a3
 # ╟─63a27358-47d5-4c64-b999-44b068aeb3f0
 # ╠═e4a1d3d0-d1fb-11ec-3cf4-bf045b178625
+# ╠═47bade36-8484-431d-90ae-27ad226f68bc
+# ╠═ed8258d9-7266-4f1c-8a8b-2491d41e15cf
+# ╠═c896ee17-d3f4-4d39-b7ba-dbef7bf921d9
+# ╠═13059770-a5b5-4647-8755-8216daca1155
 # ╟─149d27b1-21a6-44a3-8bab-07bc382667f7
 # ╠═2eff04be-e558-487a-9665-b0ea0c03ba37
-# ╠═f93bdd7d-88f6-494d-86df-306f11daf850
+# ╠═ce9791fc-2635-4e8e-b25d-2e88dd454e67
 # ╟─01a1baa2-6410-49df-a145-63caadf01b21
 # ╠═2ea60165-4aa9-4cc0-ba30-b3cb77146063
+# ╠═8062deb9-e5d6-4e46-bd87-51e1305971a8
 # ╟─79453f53-9f05-484e-a29a-f96b179a37b1
 # ╠═305e6bc7-797e-4df6-98be-76110a96d97e
-# ╠═f34387c3-119c-4783-b13d-ed114a58ae0d
 # ╠═3395eeb0-cfaf-4b82-9446-22e28ed7e87c
 # ╠═5b8f1070-dffc-4122-88bb-b0a4ee9d838d
 # ╠═137c365e-f85a-410c-bece-97d6edee2147
+# ╠═1d30e1a3-6acd-4fd5-9433-a06facaea3ba
+# ╠═21fd02a5-d540-4b70-9089-634a17b11847
 # ╠═eeaa7409-f03f-4cbb-8e65-bf42fdbffd63
 # ╠═938f7095-cb7d-4854-9a09-831d8adf9b12
 # ╠═53ac178d-5a1a-4a99-bb75-09965dec169e
 # ╠═a75bdb11-a94a-42c3-903d-98af1805036a
-# ╠═35b7428d-5c9a-469c-8c78-fd8bed3c73ee
+# ╠═f0d1754a-ecb2-4742-9157-d84fb59647f4
 # ╠═4fb868f4-90fa-4d69-b7b9-81ebb965e3e6
 # ╠═0d5d68e7-30ac-4a17-a18c-cf9e38fb4b27
-# ╠═aee08ae6-d303-41db-b23d-45f7f99049ec
 # ╠═73d4cc32-e99a-42e8-8855-75ac032ca316
 # ╠═e200f602-a8ac-41d8-b952-6070d161c46b
+# ╠═79d9b166-8c4e-41a4-917d-32420c3a2234
 # ╠═f05e9e5d-4f58-49cd-b5e5-6ee9e6429748
 # ╠═d24bf573-46b5-43b0-8b1d-75161485f0b1
 # ╠═3af31246-b547-4cfd-8b87-5732cf6e0fc1
 # ╠═86195783-b351-4c05-bdca-c9abd590e535
+# ╠═f4c4f726-356a-4b38-b0e9-b28c14bf2acc
+# ╠═48444fc2-a323-4fc7-8b29-dd1ebcdd64bf
 # ╠═d3db3785-51fc-46a8-bf64-372223382170
 # ╠═cea30dd6-328d-4f2f-8f12-5523d9e85d0f
 # ╠═a34229d4-ce8d-46f6-b985-e8369696a0f4
 # ╠═3411f19a-f11a-498d-85d5-6c5b13f63311
 # ╠═221e9a81-817d-46c8-9d1f-ec835c7be898
-# ╠═f5e0d5a4-09e9-4514-b747-2232056147e8
 # ╠═1383c618-4440-40a8-b25f-2157ea4be46e
 # ╠═c50fa089-569e-4ec5-a0ff-eb956a912ea6
 # ╟─00000000-0000-0000-0000-000000000001
