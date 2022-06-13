@@ -12,6 +12,12 @@ SentinelArrays = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
 
 [compat]
 julia = "1.7.2"
+CSV = "0.10.4"
+DataFrames = "1.3.4"
+Plots = "0.1.0"
+PlutoUI = "0.7.39"
+SentinelArrays = "1.3.13"
+
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
