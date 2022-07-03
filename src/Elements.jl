@@ -2,11 +2,14 @@
 
 j = 1.0im
 
-""" Adds elements in series
+"""
+	s(series::AbstractElem)
+
+Adds elements in series
 
      """
 
-function s(series)
+function s(series::AbstractElem)
 
 	z = 0
     for elem in series
@@ -15,9 +18,6 @@ function s(series)
     return z
 end
 
-""" Adds elements in parallel
-
-     """
 
 abstract type AbstractElem end
 
@@ -65,6 +65,12 @@ mutable struct CPE <: AbstractElem
 	f::Float64
 end
 
+"""
+	calcOmega(elem::AbstractElem)
+
+Calculate the pulsation of a given element (::AbstractElem) at the frequency associated
+
+ """
 begin
 	calcOmega(elem::L) = elem.f*2*pi
 	calcOmega(elem::R) = elem.f*2*pi
@@ -72,6 +78,13 @@ begin
 	calcOmega(elem::CPE) = elem.f*2*pi
 end
 
+
+"""
+	calcImp(elem::AbstractElem)
+
+Calculate the impedance of a given element (::AbstractElem) at the frequency associated
+
+ """
 begin
 	calcImp(elem::L) = elem.p[1]*1j*calcOmega(elem)
 	calcImp(elem::R) = elem.p[1]*length(elem.f)
@@ -79,7 +92,14 @@ begin
 	calcImp(elem::CPE) = 1.0/(elem.p[1]*(j*calcOmega(elem))^elem.p[2])
 end
 
-begin
+
+"""
+	p(parallel::AbstractElem)
+
+Adds elements in parallel
+
+ """
+
 	function p(parallel)
 
 	    z = 0
@@ -95,4 +115,3 @@ begin
 		end
 	    return 1/z
 	end
-end

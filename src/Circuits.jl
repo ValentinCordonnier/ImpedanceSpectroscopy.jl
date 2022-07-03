@@ -9,6 +9,13 @@ struct BaseCircuit <: AbstractCircuit
 
 end
 
+"""
+	getImp(circuit::BaseCircuit)
+
+This function allows to obtain the impedance of a circuit (::BaseCircuit) from it
+
+
+"""
 function getImp(circuit::BaseCircuit)
 	a = []
 	for i in circuit.values
@@ -25,6 +32,13 @@ function getImp(circuit::BaseCircuit)
 	return a
 end
 
+"""
+	getFreq(circuit::BaseCircuit)
+
+This function allows to obtain the frequency of a circuit (::BaseCircuit) from it
+
+
+"""
 function getFreq(circuit::BaseCircuit)
 	a = []
 	for i in circuit.values
@@ -41,10 +55,23 @@ function getFreq(circuit::BaseCircuit)
 	return a
 end
 
+"""
+	getElem(circuit::BaseCircuit)
+
+This function allows to obtain the elements of a circuit (::BaseCircuit) from it
+
+
+"""
 function getElem(circuit::BaseCircuit)
 		return circuit.elements
 end
+"""
+	calculateCircuitLength(circuit::BaseCircuit)
 
+This function allows to obtain the length of a circuit (::BaseCircuit) from it
+
+
+"""
 function calculateCircuitLength(circuit::BaseCircuit)
 	lengthCircuit = 0
 	for i in getImp(circuit)
@@ -53,6 +80,13 @@ function calculateCircuitLength(circuit::BaseCircuit)
 	return lengthCircuit
 end
 
+"""
+	ImpedanceCircuit(circuit::BaseCircuit)
+
+This function allows to obtain the total impedance of a circuit (::BaseCircuit) from it
+
+
+"""
 function ImpedanceCircuit(circuit::BaseCircuit)
 	Zall = 0
 	for i in getImp(circuit)
@@ -65,14 +99,40 @@ function ImpedanceCircuit(circuit::BaseCircuit)
 	return Zall
 end
 
+"""
+	modZ(Z::Complex)
+
+This function is used to get the module of a complex number (::Complex)
+
+
+"""
 function modZ(Z::Complex)
 	return sqrt(real(Z)^2+imag(Z)^2)
 end
 
+"""
+	argZ(Z::Complex)
+
+This function is used to get the argument of a complex number (::Complex)
+
+
+"""
 function argZ(Z::Complex)
 	return atan(imag(Z),real(Z))*(180/pi)
 end
 
+"""
+	RangeFreq(circuit::BaseCircuit, fStart::Int64, fEnd::Int64, nbEva::Int)
+
+	or RangeFreq(circuit::BaseCircuit, freq::Vector{Int64})
+
+This function is used to get the impedance of a given circuit (::BaseCircuit) at some frequencies.
+You can either give the starting frequency (::Int64) and the finishing one with the number of evaluation you want
+
+or you can give a vector of chosen frequencies 
+
+
+"""
 begin
 	function RangeFreq(circuit::BaseCircuit, fStart::Int64, fEnd::Int64, nbEva::Int)
 

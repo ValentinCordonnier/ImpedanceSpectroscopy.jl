@@ -1,8 +1,17 @@
+"""
+	plotNyquist(data::Vector{Complex}, xlim::Int64, ylim::Int64)
+	or plotNyquist(dataset::String, xlim::Int64, ylim::Int64)
 
+This function is used to get the Nyquist plot of a dataframe of complex values (::Vector{Complex})
+
+or with another type with the name of a CSV file containing the required data, you have to also input
+the limits of the graphic as it can be important to visualize well the data
+
+"""
 begin
 
-	function plotNyquist(data)
-		plot(real(data), imag(data), framestyle = :origin, xlabel = "Z/Ω", ylabel = "-Z/Ω", xlim = [0,100], ylim = [-50,0], label = "circuit1", yflip = true, seriestype = :scatter, title = "Nyquist Plot")
+	function plotNyquist(data::Vector{Complex}, xlim1::Int64, ylim1::Int64)
+		plot(real(data), imag(data), framestyle = :origin, xlabel = "Z/Ω", ylabel = "-Z/Ω", xlim = [0,xlim1], ylim = [-ylim1,0], label = "circuit1", yflip = true, seriestype = :scatter, title = "Nyquist Plot")
 	end
 
 	function plotNyquist(dataset::String, xlim::Int64, ylim::Int64)
@@ -16,9 +25,19 @@ begin
 
 end
 
+"""
+	plotBode(data::Vector{Complex}, xlim::Int64, ylim::Int64)
+	or plotBode(dataset::String, xlim::Int64, ylim::Int64)
+
+This function is used to get the Bode plot of a dataframe of complex values (::Vector{Complex})
+
+or with another type with the name of a CSV file containing the required data, you have to also input
+the limits of the graphic as it can be important to visualize well the data
+
+"""
 begin
 
-	function plotBode(data::Vector{Any}, xlim::Int64, ylim::Int64)
+	function plotBode(data::Vector{Complex}, xlim::Int64, ylim::Int64)
 
 		modImp = []
 		argImp = []

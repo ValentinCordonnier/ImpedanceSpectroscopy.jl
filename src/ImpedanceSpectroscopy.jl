@@ -10,7 +10,7 @@ module ImpedanceSpectroscopy
     export AbstractElem, L, R, C, CPE
     export calcImp, calcOmega
 
-    export AbstractCircuit, getImp, getFreq, getElem
+    export AbstractCircuit, BaseCircuit, getImp, getFreq, getElem
     export calculateCircuitLength, ImpedanceCircuit
     export modZ, argZ
     export RangeFreq
