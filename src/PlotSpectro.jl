@@ -1,4 +1,4 @@
-"""
+#=
 	plotNyquist(data::Vector{Complex}, xlim::Int64, ylim::Int64)
 	or plotNyquist(dataset::String, xlim::Int64, ylim::Int64)
 
@@ -7,7 +7,7 @@ This function is used to get the Nyquist plot of a dataframe of complex values (
 or with another type with the name of a CSV file containing the required data, you have to also input
 the limits of the graphic as it can be important to visualize well the data
 
-"""
+=#
 begin
 
 	function plotNyquist(data::Vector{Complex}, xlim1::Int64, ylim1::Int64)
@@ -25,7 +25,7 @@ begin
 
 end
 
-"""
+#=
 	plotBode(data::Vector{Complex}, xlim::Int64, ylim::Int64)
 	or plotBode(dataset::String, xlim::Int64, ylim::Int64)
 
@@ -34,7 +34,7 @@ This function is used to get the Bode plot of a dataframe of complex values (::V
 or with another type with the name of a CSV file containing the required data, you have to also input
 the limits of the graphic as it can be important to visualize well the data
 
-"""
+=#
 begin
 
 	function plotBode(data::Vector{Complex}, xlim::Int64, ylim::Int64)

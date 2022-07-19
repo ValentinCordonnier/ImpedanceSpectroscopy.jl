@@ -1,13 +1,14 @@
 
+abstract type AbstractElem end
 
 j = 1.0im
 
-"""
+#=
 	s(series::AbstractElem)
 
 Adds elements in series
 
-     """
+     =#
 
 function s(series::AbstractElem)
 
@@ -19,58 +20,57 @@ function s(series::AbstractElem)
 end
 
 
-abstract type AbstractElem end
 
-""" Defines an inductor
+#= Defines an inductor
 
 	Z = L × j2πf
 
-     """
+     =#
 
 mutable struct L <: AbstractElem
 	p::Float64
 	f::Float64
 end
 
-""" Defines a resistor
+#= Defines a resistor
 
         Z = R
 
-    """
+    =#
 
 mutable struct R <: AbstractElem
 	p::Float64
 	f::Float64
 end
 
-""" Defines a capacitor
+#= Defines a capacitor
 
 	Z = 1 / (C×j2πf)
 
-     """
+     =#
 
 mutable struct C <: AbstractElem
 	p::Float64
 	f::Float64
 end
 
-""" Defines a constant phase element
+#= Defines a constant phase element
 
 	Z = 1 / (Q×(j2πf)^α)
 
-    """
+    =#
 
 mutable struct CPE <: AbstractElem
 	p::Vector{Float64}
 	f::Float64
 end
 
-"""
+#=
 	calcOmega(elem::AbstractElem)
 
 Calculate the pulsation of a given element (::AbstractElem) at the frequency associated
 
- """
+ =#
 begin
 	calcOmega(elem::L) = elem.f*2*pi
 	calcOmega(elem::R) = elem.f*2*pi
@@ -79,12 +79,12 @@ begin
 end
 
 
-"""
+#=
 	calcImp(elem::AbstractElem)
 
 Calculate the impedance of a given element (::AbstractElem) at the frequency associated
 
- """
+ =#
 begin
 	calcImp(elem::L) = elem.p[1]*1j*calcOmega(elem)
 	calcImp(elem::R) = elem.p[1]*length(elem.f)
@@ -93,12 +93,12 @@ begin
 end
 
 
-"""
+#=
 	p(parallel::AbstractElem)
 
 Adds elements in parallel
 
- """
+ =#
 
 	function p(parallel)
 
