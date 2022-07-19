@@ -10,4 +10,8 @@ using Test
 
 	circuit1 = BaseCircuit([R1,C2,L3],["R1-C2-L3"])
 	circuit2 = BaseCircuit([R1,C2,[R1,C2,R1],L3],["R1-C2-[R1-C2-R1]-L3"])
+
+
+	@test ImpedanceCircuit(circuit1) == 10.0 - 26.211664583290244im
+	@test ImpedanceCircuit(circuit2) == 14.828442652140108 - 27.121804581144822im
 end
